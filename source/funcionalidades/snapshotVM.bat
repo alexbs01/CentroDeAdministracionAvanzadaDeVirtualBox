@@ -1,21 +1,17 @@
 @ECHO OFF
 
-CALL instrucciones.bat
+CALL ..\informacion\instructions.bat
+
+CALL vmSearcher.bat
 
 SET fecha = date /T
-DIR /B /S *.vbox >> rutasVBox.txt
-ECHO. >> rutasVBox.txt
-ECHO - NO BORRES ESTA ULTIMA LINEA PARA UN BUEN FUNCIONAMIENTO >> rutasVBox.txt
 
-START rutasVBox.txt
-
-PAUSE
  
-FOR /F %%i IN (rutasVBox.txt) DO (
+FOR /F %%i IN (routesVBox.txt) DO (
 	START /WAIT C:\"Program Files"\Oracle\VirtualBox\vboxmanage snapshot %%i take "Captura hecha a %date% %time%" && ECHO Captura de la maquina %%i tomada
 )
 
-DEL rutasVBox.txt
+DEL routesVBox.txt
 
 REM ECHO.
 REM ECHO ES OBLIGATORIO QUE EN TODA LA RUTA DE LA MAQUINA VIRTUAL NO HAYA ESPACIOS

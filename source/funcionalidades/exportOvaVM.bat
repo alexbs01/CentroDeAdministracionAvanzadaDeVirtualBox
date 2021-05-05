@@ -1,19 +1,23 @@
 @ECHO OFF
 
-CALL instrucciones.bat
+CALL ..\informacion\instructions.bat
 
-DIR /B /S *.vbox >> direcciones.txt
-
-START direcciones.txt
-
-PAUSE
+CALL vmSearcher.bat
  
-FOR /F %%i IN (direcciones.txt) DO (
-	START /b C:\"Program Files"\Oracle\VirtualBox\vboxmanage registervm %%i
-	IF %ERRORLEVEL% == 0 ECHO Maquina %%i anhadida
+FOR /F %%i IN (routesVBox.txt) DO (
+	START /WAIT C:\"Program Files"\Oracle\VirtualBox\vboxmanage export %%i --output %%i.ova && ECHO Maquina %%i exportada
 )
 
-DEL direcciones.txt
+DEL routesVBox.txt
+
+DIR /B /S *.vbox.ova >> rutasOva.txt
+
+MKDIR ovasDeMaquinas
+FOR /F %%i IN (rutasOva.txt) DO (
+	MOVE /Y %%i ovasDeMaquinas && ECHO Maquina %%i movida
+)
+
+DEL rutasOva.txt
 
 REM ECHO.
 REM ECHO **************

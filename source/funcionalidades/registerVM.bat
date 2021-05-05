@@ -1,29 +1,15 @@
 @ECHO OFF
 
-CALL instrucciones.bat
+CALL ..\informacion\instructions.bat
 
-DIR /B /S *.vbox >> rutasVBox.txt
-ECHO. >> rutasVBox.txt
-ECHO NO BORRES ESTA ULTIMA LINEA PARA UN BUEN FUNCIONAMIENTO >> rutasVBox.txt
-
-START rutasVBox.txt
-
-PAUSE
+CALL vmSearcher.bat
  
-FOR /F %%i IN (rutasVBox.txt) DO (
-	START /WAIT C:\"Program Files"\Oracle\VirtualBox\vboxmanage export %%i --output %%i.ova && ECHO Maquina %%i exportada
+FOR /F %%i IN (routesVBox.txt) DO (
+	START vboxmanage registervm %%i
+	IF %ERRORLEVEL% == 0 ECHO Maquina %%i anhadida
 )
 
-DEL rutasVBox.txt
-
-DIR /B /S *.vbox.ova >> rutasOva.txt
-
-MKDIR ovasDeMaquinas
-FOR /F %%i IN (rutasOva.txt) DO (
-	MOVE /Y %%i ovasDeMaquinas && ECHO Maquina %%i movida
-)
-
-DEL rutasOva.txt
+DEL routesVBox.txt
 
 REM ECHO.
 REM ECHO **************

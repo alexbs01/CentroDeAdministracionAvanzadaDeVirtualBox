@@ -1,9 +1,12 @@
 @ECHO OFF
-CALL .\informacion\tituloInicial.bat
+CALL .\informacion\initialTitle.bat
+
+SET PATH=%PATH%;C:\Program Files\Oracle\VirtualBox
 
 ECHO.
 ECHO  Escoge que operacion deseas realizar.
 ECHO.
+
 
 ECHO  e. Exportar una o varias VM a ova
 ECHO  r. Registrar en Virtual Box nuevas VM
