@@ -8,11 +8,12 @@ SET fecha = date /T
 
  
 FOR /F %%i IN (routesVBox.txt) DO (
-	START /WAIT C:\"Program Files"\Oracle\VirtualBox\vboxmanage snapshot %%i take "Captura hecha a %date% %time%" && ECHO Captura de la maquina %%i tomada
+	START /WAIT vboxmanage snapshot %%i take "Captura hecha a %date% %time%" && ECHO Captura de la maquina %%i tomada
 )
 
 DEL routesVBox.txt
 
+..\main.bat
 REM ECHO.
 REM ECHO ES OBLIGATORIO QUE EN TODA LA RUTA DE LA MAQUINA VIRTUAL NO HAYA ESPACIOS
 REM ECHO.

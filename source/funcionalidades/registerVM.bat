@@ -2,7 +2,7 @@
 
 CALL ..\informacion\instructions.bat
 
-CALL vmSearcher.bat
+START vmSearcher.bat
  
 FOR /F %%i IN (routesVBox.txt) DO (
 	START vboxmanage registervm %%i
@@ -11,6 +11,7 @@ FOR /F %%i IN (routesVBox.txt) DO (
 
 DEL routesVBox.txt
 
+..\main.bat
 REM ECHO.
 REM ECHO **************
 REM ECHO * REQUISITOS *

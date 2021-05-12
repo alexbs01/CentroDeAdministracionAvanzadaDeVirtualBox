@@ -5,7 +5,7 @@ CALL ..\informacion\instructions.bat
 CALL vmSearcher.bat
  
 FOR /F %%i IN (routesVBox.txt) DO (
-	START /WAIT C:\"Program Files"\Oracle\VirtualBox\vboxmanage export %%i --output %%i.ova && ECHO Maquina %%i exportada
+	START /WAIT vboxmanage export %%i --output %%i.ova && ECHO Maquina %%i exportada
 )
 
 DEL routesVBox.txt
@@ -18,6 +18,8 @@ FOR /F %%i IN (rutasOva.txt) DO (
 )
 
 DEL rutasOva.txt
+
+..\main.bat
 
 REM ECHO.
 REM ECHO **************
