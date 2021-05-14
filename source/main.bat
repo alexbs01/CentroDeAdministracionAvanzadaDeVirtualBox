@@ -2,7 +2,8 @@
 :: El programa comienza en la etiqueta "primerInicio"
 
 :escogerOtraVez
-:: Funcion que se usara cuando se escoja una opcion a realizar
+:: Las etiquetas del GOTO se pueden usar para indicar funciones, esta se usara cuando 
+:: se escoja una opcion a realizar
 	PAUSE
 	CLS
 	GOTO inicio

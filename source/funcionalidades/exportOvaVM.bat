@@ -11,14 +11,14 @@ FOR /F %%i IN (routesVBox.txt) DO (
 )
 :: Exporta las VM una por una en ovas independientes
 
-DEL routesVBox.txt
 
-DIR /B /S *.vbox.ova >> rutasOva.txt
+DIR /B /S *.vbox.ova >> routesOva.txt
 
 MKDIR ovasDeMaquinas
-FOR /F %%i IN (rutasOva.txt) DO (
+FOR /F %%i IN (routesOva.txt) DO (
 	MOVE /Y %%i ovasDeMaquinas && ECHO Maquina %%i movida
 )
 :: Mueve todas las ova a una carpeta
 
-DEL rutasOva.txt
+DEL routesOva.txt
+DEL routesVBox.txt
