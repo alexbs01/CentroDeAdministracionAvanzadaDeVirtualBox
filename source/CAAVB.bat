@@ -49,25 +49,25 @@ GOTO:EOF
 	PAUSE
 GOTO:EOF
 
-:exportOva
+:exportOvaVM
 	CALL:instructions
 	:: Muestra las instrucciones
 
 	CALL:vmSearcher
 	:: Llama al buscador de maquinas para abrir el txt
-
+MKDIR ovasDeMaquinas
 	FOR /F %%i IN (routesVBox.txt) DO (
-		START /WAIT vboxmanage export %%i --output %%i.ova && ECHO Maquina %%i exportada
+		START /B /WAIT vboxmanage export %%i --output %%i.ova && ECHO Maquina %%i exportada
 	)
 	:: Exporta las VM una por una en ovas independientes
 
 
 	DIR /B /S *.vbox.ova >> routesOva.txt
 
-	MKDIR ovasDeMaquinas
-	FOR /F %%i IN (routesOva.txt) DO (
-		MOVE /Y %%i ovasDeMaquinas && ECHO Maquina %%i movida
-	)
+	REM MKDIR ovasDeMaquinas
+	REM FOR /F %%i IN (routesOva.txt) DO (
+		REM MOVE /Y %%i ovasDeMaquinas && ECHO Maquina %%i movida
+	REM )
 	:: Mueve todas las ova a una carpeta
 
 	DEL routesOva.txt
@@ -82,7 +82,7 @@ GOTO:EOF
 	:: Llama al buscador de VM
 
 	FOR /F %%i IN (routesVBox.txt) DO (
-		START vboxmanage registervm %%i
+		START /B vboxmanage registervm %%i
 		IF %ERRORLEVEL% == 0 ECHO Maquina %%i anhadida
 	)
 	:: Registra las maquinas que el buscador encontro
@@ -90,21 +90,29 @@ GOTO:EOF
 	DEL routesVBox.txt
 GOTO:EOF
 
-:registerVM
+:snapshotVM
 	CALL:instructions
 	:: Muestra las instrucciones
 
 	CALL:vmSearcher
 	:: Buscador de VM
-
+	SETLOCAL enableextensions enabledelayedexpansion
+	:: Permite la reasignacion de variables
+	
 	SET fecha = date /T
-
-	 
-	FOR /F %%i IN (routesVBox.txt) DO (
-		START /WAIT vboxmanage snapshot %%i take "Captura hecha a %date% %time%" && ECHO Captura de la maquina %%i tomada
+	SET /P snapshotName="Nombre de la instantanea [Por defecto fecho y hora]: "
+	
+	IF DEFINED snapshotName (
+		FOR /F %%i IN (routesVBox.txt) DO (
+			START /B /WAIT vboxmanage snapshot %%i take "!snapshotName!" && ECHO Captura de la maquina %%i tomada
+		)
+	) ELSE (
+		FOR /F %%i IN (routesVBox.txt) DO (
+			START /B /WAIT vboxmanage snapshot %%i take "Captura hecha a %date% %time%" && ECHO Captura de la maquina %%i tomada
+		)
 	)
 	:: Hace las instantaneas poniendo como nombre el texto de entre comillas
-
+	ENDLOCAL
 	DEL routesVBox.txt
 GOTO:EOF
 
@@ -171,8 +179,10 @@ GOTO:EOF
 
 :primerInicio
 :: Con el primer inicio del programa mostrara el titulo inicial y añadira al path la ruta de VirtualBox
+:: y asi poder usar sus comandos.
 	CALL:initialTitle
 	SET PATH=%PATH%;C:\Program Files\Oracle\VirtualBox
+	:: SETLOCAL permite la expasion de variables, hace que el valor de las variables se pueda reasignar
 
 :inicio
 :: Una vez se escoge una opcion limpiara la pantalla y mostrara a partir de aqui las siguientes veces
