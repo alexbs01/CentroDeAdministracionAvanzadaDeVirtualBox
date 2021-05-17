@@ -2,6 +2,8 @@
 :: El programa comienza en la etiqueta "primerInicio"
 
 :initialTitle
+:: Las etiquetas del GOTO se pueden usar para indicar funciones, esta se usara cuando 
+:: se escoja una opcion a realizar
 	CLS
 	ECHO.
 
@@ -16,6 +18,7 @@
 	ECHO    Estas tareas se realizan haciando uso de los comandos que el programa Virtual Box pone a nuestra disposicion para manejar y hacer todo tipo de operaciones con las maquinas virtuales de este mismo software.
 	ECHO.
 GOTO:EOF
+:: "GOTO:EOF" indica el fin de la funcion
 
 :instructions
 	ECHO.
@@ -37,8 +40,8 @@ GOTO:EOF
 GOTO:EOF
 
 :vmSearcher
-	:: Este archivo busca todos los archivos .vbox a partir de el,
-	:: guarda las rutas en un txt y lo muestra
+:: Este archivo busca todos los archivos .vbox a partir de el,
+:: guarda las rutas en un txt y lo muestra
 
 	DIR /B /S *.vbox >> routesVBox.txt
 	ECHO. >> routesVBox.txt
@@ -47,6 +50,33 @@ GOTO:EOF
 	START routesVBox.txt
 
 	PAUSE
+GOTO:EOF
+
+:queHacerModifyVM
+ECHO.
+ECHO n. Cambiar configuracion en otras maquinas
+ECHO m. Modificar las mismas maquinas
+ECHO S. Salir al menu principales
+
+CHOICE /C Smn /CS /M "Escoge la opcion que desees: "
+
+IF ERRORLEVEL 3 (
+	CLS
+	GOTO queHacerModifyVM_nuevasVM
+)
+
+IF ERRORLEVEL 2 (
+	CLS
+	DEL listVM.txt
+	GOTO queHacerModifyVM_sinNuevasVM
+)
+
+IF ERRORLEVEL 1 (
+	CLS
+	IF EXIST listVM.txt DEL listVM.txt
+	GOTO inicio
+)
+
 GOTO:EOF
 
 :exportOvaVM
@@ -76,10 +106,8 @@ GOTO:EOF
 
 :registerVM
 	CALL:instructions
-	:: Muestra las instrucciones
 
 	CALL:vmSearcher
-	:: Llama al buscador de VM
 
 	FOR /F %%i IN (routesVBox.txt) DO (
 		START /B vboxmanage registervm %%i
@@ -92,10 +120,9 @@ GOTO:EOF
 
 :snapshotVM
 	CALL:instructions
-	:: Muestra las instrucciones
 
 	CALL:vmSearcher
-	:: Buscador de VM
+
 	SETLOCAL enableextensions enabledelayedexpansion
 	:: Permite la reasignacion de variables
 	
@@ -168,28 +195,107 @@ GOTO:EOF
 	DEL listVM.txt
 GOTO:EOF
 
+:modifyVM
+
+	
+	SETLOCAL enableextensions enabledelayedexpansion
+	CALL:instructions
+	
+	:queHacerModifyVM_nuevasVM
+	CALL VBoxManage list vms >> listVM.txt
+	START listVM.txt
+	PAUSE
+	
+	:queHacerModifyVM_sinNuevasVM
+	ECHO.
+	ECHO Selecciona la opcion de la caracteristica que quieras cambiar
+	ECHO.
+	ECHO r. Modificar el numero de MB de RAM
+	ECHO v. Modificar el numero de MB de memoria grafica o VRAM
+	ECHO c. Cambiar el numero de nucleos virtuales a los que tendra acceso cada maquina
+	ECHO R. Redimensionar la capacidad de los discos duros para aumentarlos
+	ECHO S. Salir al menu de opciones principales
+	
+	CHOICE /C SRcvr /CS /M "Pulsa la letra de la opcion deseada"
+	
+	IF ERRORLEVEL 5 (
+	:: Cambiar la cantidad de RAM
+		ECHO.
+		ECHO Pon el numero de MB de RAM de las VM
+		SET /P numberRAM="Ten en cuenta la RAM de tu ordenador por si abres varias VM a la vez: "
+		FOR /F "tokens=1,2" %%i IN (listVM.txt) DO (
+			START /B /WAIT VBoxManage modifyvm %%j --memory !numberRAM!
+		)
+		CALL:queHacerModifyVM
+	)
+	
+	IF ERRORLEVEL 4 (
+	:: Modificar la memoria grafica
+		ECHO.
+		ECHO Pon el numero de megas de memoria grafica
+		SET /P numberVRAM="Ten en cuenta la memoria grafica de tu ordenador y que el maximo 256 MB: "
+		FOR /F "tokens=1,2 delims= " %%i IN (listVM.txt) DO (
+			START /B /WAIT VBoxManage modifyvm %%j --vram !numberVRAM!
+		)
+		CALL:queHacerModifyVM
+	)
+	
+	IF ERRORLEVEL 3 (
+	:: Cambiar el numero de nucleos virtuales
+		ECHO.
+		ECHO Pon el numero de nucleos virtuales de las maquinas
+		SET /P numberCPU="Ten en cuenta el numero de nucleos de tu ordenador: "
+		FOR /F "tokens=1,2" %%i IN (listVM.txt) DO (
+			START /B VBoxManage modifyvm %%j --cpus !numberCPU!
+		)
+		CALL:queHacerModifyVM
+	)
+	
+	IF ERRORLEVEL 2 (
+	:: Redimensionar la capacidad
+		ECHO.
+		ECHO Escoge los discos sobre los que quieres redimensionar la capacidad
+		DIR /B /S *.vdi >> listVDI.txt
+		PAUSE 
+		ECHO.
+		SET /P megasModifymedium="Pon el numero de megas que tendran los Discos Duros, mejor pasarse que quedarse corto: "
+		FOR /F "tokens=1,2" %%i IN (listVM.txt) DO (
+			START /B VBoxManage modifymedium disk %%j --resize !megasModifymedium!
+		)
+		CALL:queHacerModifyVM
+	)
+	
+	IF ERRORLEVEL 1 (
+		ENDLOCAL
+		IF EXIST listVM.txt DEL listVM.txt
+		GOTO inicio
+	)
+	DEL listVM.txt
+	ENDLOCAL
+	GOTO inicio
+	
+GOTO:EOF
+
 :escogerOtraVez
-:: Las etiquetas del GOTO se pueden usar para indicar funciones, esta se usara cuando 
-:: se escoja una opcion a realizar
 	PAUSE
 	CLS
 	GOTO inicio
 GOTO:EOF
-:: "GOTO:EOF" indica el fin de la funcion
+
 
 :primerInicio
 :: Con el primer inicio del programa mostrara el titulo inicial y añadira al path la ruta de VirtualBox
 :: y asi poder usar sus comandos.
 	CALL:initialTitle
 	SET PATH=%PATH%;C:\Program Files\Oracle\VirtualBox
-	:: SETLOCAL permite la expasion de variables, hace que el valor de las variables se pueda reasignar
 
 :inicio
 :: Una vez se escoge una opcion limpiara la pantalla y mostrara a partir de aqui las siguientes veces
 	ECHO.
 	ECHO  Escoge que operacion deseas realizar.
 	ECHO.
-
+	
+	ECHO  m. Modificar la configuracion de maquinas virtuales
 	ECHO  l. Listar las maquinas registradas
 	ECHO  d. Desregistrar maquinas con estado inaccesible
 	ECHO  D. Desregistrar maquinas que se seleccionen
@@ -198,9 +304,16 @@ GOTO:EOF
 	ECHO  s. Sacar una snapshot o instantanea de una o varias maquinas
 	ECHO  S. Salir
 
-	CHOICE /C SsreDdl /CS /M "Pulsa la letra de la opcion deseada"
+	CHOICE /C SsreDdlm /CS /M "Pulsa la letra de la opcion deseada"
 	:: Se escoge la opcion deseada, que redirigira al errorlevel correspondiente
 
+	IF ERRORLEVEL 8 (
+	:: Modificar las caracteristicas de VM
+		CLS
+		CALL:modifyVM
+		CALL:escogerOtraVez
+	)
+	
 	IF ERRORLEVEL 7 (
 	:: Listar VM
 		ECHO.
