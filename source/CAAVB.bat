@@ -196,15 +196,13 @@ GOTO:EOF
 GOTO:EOF
 
 :modifyVM
-
-	
 	SETLOCAL enableextensions enabledelayedexpansion
 	CALL:instructions
 	
 	:queHacerModifyVM_nuevasVM
+	IF EXIST listVM.txt DEL listVM.txt
 	CALL VBoxManage list vms >> listVM.txt
 	START listVM.txt
-	PAUSE
 	
 	:queHacerModifyVM_sinNuevasVM
 	ECHO.
@@ -255,18 +253,27 @@ GOTO:EOF
 	:: Redimensionar la capacidad
 		ECHO.
 		ECHO Escoge los discos sobre los que quieres redimensionar la capacidad
-		DIR /B /S *.vdi >> listVDI.txt
-		PAUSE 
+		PAUSE
+		DIR /B /S *.vdi | FINDSTR /V "{.*}" >> listVDI.txt
+		::DIR /B /S *.vmdk | FINDSTR /V "{.*}" >> listVDI.txt
+		:: Busca todos los discos con extensión .vdi que no pertenezaca a snapshots y las guarda en el txt
+		
+		START listVDI.txt
+		PAUSE
+		ECHO Una vez que aumentes la capacidad, no podras reducirla
 		ECHO.
 		SET /P megasModifymedium="Pon el numero de megas que tendran los Discos Duros, mejor pasarse que quedarse corto: "
-		FOR /F "tokens=1,2" %%i IN (listVM.txt) DO (
-			START /B VBoxManage modifymedium disk %%j --resize !megasModifymedium!
+		FOR /F %%i IN (listVDI.txt) DO (
+			START /B /WAIT VBoxManage modifymedium disk "%%i" --resize !megasModifymedium!
 		)
-		CALL:queHacerModifyVM
+		:: Redimensiona los discos seleccionados
+		DEL listVDI.txt
+		GOTO queHacerModifyVM_nuevasVM
 	)
 	
 	IF ERRORLEVEL 1 (
 		ENDLOCAL
+		CLS
 		IF EXIST listVM.txt DEL listVM.txt
 		GOTO inicio
 	)
