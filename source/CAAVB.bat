@@ -53,29 +53,31 @@ GOTO:EOF
 GOTO:EOF
 
 :queHacerModifyVM
-ECHO.
-ECHO n. Cambiar configuracion en otras maquinas
-ECHO m. Modificar las mismas maquinas
-ECHO S. Salir al menu principales
-
-CHOICE /C Smn /CS /M "Escoge la opcion que desees: "
-
-IF ERRORLEVEL 3 (
+:: Una vez finalice el proceso de cambios de configuracion en las VM (:modifyVM) el programa vendra aqui
+:: a decidir si escoger nuevas VM, seguir modificando las mismas o salir al menu principal.
 	CLS
-	GOTO queHacerModifyVM_nuevasVM
-)
+	ECHO.
+	ECHO n. Cambiar configuracion en otras maquinas
+	ECHO m. Modificar las mismas maquinas
+	ECHO S. Salir al menu principales
 
-IF ERRORLEVEL 2 (
-	CLS
-	DEL listVM.txt
-	GOTO queHacerModifyVM_sinNuevasVM
-)
+	CHOICE /C Smn /CS /M "Escoge la opcion que desees: "
 
-IF ERRORLEVEL 1 (
-	CLS
-	IF EXIST listVM.txt DEL listVM.txt
-	GOTO inicio
-)
+	IF ERRORLEVEL 3 (
+		CLS
+		GOTO queHacerModifyVM_nuevasVM
+	)
+
+	IF ERRORLEVEL 2 (
+		CLS
+		GOTO queHacerModifyVM_sinNuevasVM
+	)
+
+	IF ERRORLEVEL 1 (
+		CLS
+		IF EXIST listVM.txt DEL listVM.txt
+		GOTO inicio
+	)
 
 GOTO:EOF
 
@@ -85,7 +87,14 @@ GOTO:EOF
 
 	CALL:vmSearcher
 	:: Llama al buscador de maquinas para abrir el txt
-MKDIR ovasDeMaquinas
+	CLS
+	ECHO.
+	ECHO ***************************
+	ECHO * Exportar maquinas a OVA *
+	ECHO ***************************
+	ECHO.
+	
+	IF NOT EXIST ovasDeMaquinas_%date:/=_% MKDIR ovasDeMaquinas_%date:/=_%
 	FOR /F %%i IN (routesVBox.txt) DO (
 		START /B /WAIT vboxmanage export %%i --output %%i.ova && ECHO Maquina %%i exportada
 	)
@@ -94,10 +103,9 @@ MKDIR ovasDeMaquinas
 
 	DIR /B /S *.vbox.ova >> routesOva.txt
 
-	REM MKDIR ovasDeMaquinas
-	REM FOR /F %%i IN (routesOva.txt) DO (
-		REM MOVE /Y %%i ovasDeMaquinas && ECHO Maquina %%i movida
-	REM )
+	FOR /F %%i IN (routesOva.txt) DO (
+		MOVE /Y %%i ovasDeMaquinas_%date:/=_% && ECHO Maquina %%i movida
+	)
 	:: Mueve todas las ova a una carpeta
 
 	DEL routesOva.txt
@@ -108,6 +116,12 @@ GOTO:EOF
 	CALL:instructions
 
 	CALL:vmSearcher
+	CLS
+	ECHO.
+	ECHO ********************************
+	ECHO * Registrar maquinas virtuales *
+	ECHO ********************************
+	ECHO.
 
 	FOR /F %%i IN (routesVBox.txt) DO (
 		START /B vboxmanage registervm %%i
@@ -122,6 +136,12 @@ GOTO:EOF
 	CALL:instructions
 
 	CALL:vmSearcher
+	CLS
+	ECHO.
+	ECHO ***********************************
+	ECHO * Snapshots de maquinas virtuales *
+	ECHO ***********************************
+	ECHO.
 
 	SETLOCAL enableextensions enabledelayedexpansion
 	:: Permite la reasignacion de variables
@@ -144,6 +164,12 @@ GOTO:EOF
 GOTO:EOF
 
 :unregisterInaccessibleVM
+	CLS
+	ECHO.
+	ECHO *****************************************
+	ECHO * Desregistrar VM en estado inaccesible *
+	ECHO *****************************************
+	ECHO.
 	CHOICE /M "Estas seguro que quieres desregistrar las VM inaccesibles?"
 	:: Da la opcion a escoger si realmente quieres desregistrarlas o no
 
@@ -176,6 +202,12 @@ GOTO:EOF
 GOTO:EOF
 
 :unregisterVM
+	CLS
+	ECHO.
+	ECHO *************************
+	ECHO * Desregistrar maquinas *
+	ECHO *************************
+	ECHO.
 	CALL VBoxManage list vms >> listVM.txt
 	START listVM.txt
 	:: Lista las maquinas registradas y las guarda en un txt
@@ -184,13 +216,9 @@ GOTO:EOF
 
 	FOR /F "tokens=1,2" %%i IN (listVM.txt) DO (
 		START /B /WAIT VBoxManage unregistervm %%j
+		ECHO Maquina %%i desregistrada
 	)
 	:: Desregistra las maquinas que se dejaron en el txt
-
-	ECHO.
-	ECHO ***************************************************
-	ECHO * Maquinas virtuales inaccesibles desregistradas. *
-	ECHO ***************************************************
 
 	DEL listVM.txt
 GOTO:EOF
@@ -198,6 +226,12 @@ GOTO:EOF
 :modifyVM
 	SETLOCAL enableextensions enabledelayedexpansion
 	CALL:instructions
+	CLS
+	ECHO.
+	ECHO ************************************
+	ECHO * Modificacion de parametros de VM *
+	ECHO ************************************
+	ECHO.
 	
 	:queHacerModifyVM_nuevasVM
 	IF EXIST listVM.txt DEL listVM.txt
@@ -223,7 +257,9 @@ GOTO:EOF
 		SET /P numberRAM="Ten en cuenta la RAM de tu ordenador por si abres varias VM a la vez: "
 		FOR /F "tokens=1,2" %%i IN (listVM.txt) DO (
 			START /B /WAIT VBoxManage modifyvm %%j --memory !numberRAM!
+			ECHO RAM de la maquina %%i cambiado a !numberRAM!
 		)
+		PAUSE
 		CALL:queHacerModifyVM
 	)
 	
@@ -234,7 +270,9 @@ GOTO:EOF
 		SET /P numberVRAM="Ten en cuenta la memoria grafica de tu ordenador y que el maximo 256 MB: "
 		FOR /F "tokens=1,2 delims= " %%i IN (listVM.txt) DO (
 			START /B /WAIT VBoxManage modifyvm %%j --vram !numberVRAM!
+			ECHO VRAM de la maquina %%i cambiado a !numberVRAM!
 		)
+		PAUSE
 		CALL:queHacerModifyVM
 	)
 	
@@ -245,7 +283,9 @@ GOTO:EOF
 		SET /P numberCPU="Ten en cuenta el numero de nucleos de tu ordenador: "
 		FOR /F "tokens=1,2" %%i IN (listVM.txt) DO (
 			START /B VBoxManage modifyvm %%j --cpus !numberCPU!
+			ECHO Nucleos de la maquina %%i cambiado a !numberCPU!
 		)
+		PAUSE
 		CALL:queHacerModifyVM
 	)
 	
@@ -265,8 +305,11 @@ GOTO:EOF
 		SET /P megasModifymedium="Pon el numero de megas que tendran los Discos Duros, mejor pasarse que quedarse corto: "
 		FOR /F %%i IN (listVDI.txt) DO (
 			START /B /WAIT VBoxManage modifymedium disk "%%i" --resize !megasModifymedium!
+			ECHO Tamano del disco %%i aumentado a !megasModifymedium!
 		)
 		:: Redimensiona los discos seleccionados
+		PAUSE
+		CLS
 		DEL listVDI.txt
 		GOTO queHacerModifyVM_nuevasVM
 	)
@@ -280,6 +323,39 @@ GOTO:EOF
 	DEL listVM.txt
 	ENDLOCAL
 	GOTO inicio
+GOTO:EOF
+
+:unattendedInstallVM
+	CALL:instructions
+	CLS
+	ECHO.
+	ECHO ***************************
+	ECHO * Instalacion desatendida *
+	ECHO ***************************
+	ECHO.
+	ECHO Ahora se abrira un archivo de texto con todas la VM registradas que hay en el momento, deja UNICAMENTE la que se instalara de forma desatendida.
+	PAUSE
+	
+	START /B /WAIT VBoxManage list vms >> listVM.txt
+	START listVM.txt
+	PAUSE
+	
+	ECHO Ahora se procedera con la creacion de un archivo .xml que instalara de forma desatendida la maquina virtual para la que se configure
+	ECHO Escoge cuidadosamente los valores que se te iran preguntando
+	ECHO.
+	
+	SET /P iso="Pon la localizacion de la ISO: "
+	SET /P user="Nombre de usuario: "
+	SET /P password="Contrasena del usuario: "
+	::SET /P fullUserName="Pon la localizacion de la ISO: "
+	::SET /P keyProduct="Clave del producto: " --key=%keyProduct%
+	::SET /P country="Codigo de dos letras de tu pais: "
+	SET /P hostname="Nombre FQDN del ordenador: "
+	
+	FOR /F "tokens=1,2" %%i IN (listVM.txt) DO (
+		START /B /WAIT VBoxManage unattended install %%i --iso="%iso%" --user=%user% --password=%password% --full-user-name=%user% --no-install-additions --locale=es_ES --country=ES --time-zone=ES --hostname=%hostname%
+	)
+	DEL listVM.txt
 	
 GOTO:EOF
 
@@ -302,6 +378,7 @@ GOTO:EOF
 	ECHO  Escoge que operacion deseas realizar.
 	ECHO.
 	
+	ECHO  I. Hacer una instalacion desatendida
 	ECHO  m. Modificar la configuracion de maquinas virtuales
 	ECHO  l. Listar las maquinas registradas
 	ECHO  d. Desregistrar maquinas con estado inaccesible
@@ -311,8 +388,15 @@ GOTO:EOF
 	ECHO  s. Sacar una snapshot o instantanea de una o varias maquinas
 	ECHO  S. Salir
 
-	CHOICE /C SsreDdlm /CS /M "Pulsa la letra de la opcion deseada"
+	CHOICE /C SsreDdlmI /CS /M "Pulsa la letra de la opcion deseada"
 	:: Se escoge la opcion deseada, que redirigira al errorlevel correspondiente
+	
+	IF ERRORLEVEL 9 (
+	:: Instalacion desatendida
+		CLS
+		CALL:unattendedInstallVM
+		CALL:escogerOtraVez
+	)
 
 	IF ERRORLEVEL 8 (
 	:: Modificar las caracteristicas de VM
@@ -323,7 +407,7 @@ GOTO:EOF
 	
 	IF ERRORLEVEL 7 (
 	:: Listar VM
-		ECHO.
+		CLS
 		START /B /WAIT vboxmanage list vms
 		CALL:escogerOtraVez
 	)	
