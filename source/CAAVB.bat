@@ -17,6 +17,8 @@
 
 	ECHO    Estas tareas se realizan haciando uso de los comandos que el programa Virtual Box pone a nuestra disposicion para manejar y hacer todo tipo de operaciones con las maquinas virtuales de este mismo software.
 	ECHO.
+	ECHO Creado por Alejandro Becerra
+	ECHO Repositorio a GitHub del proyecto: https://github.com/alexbs01/CentroDeAdministracionAvanzadaDeVirtualBox
 GOTO:EOF
 :: "GOTO:EOF" indica el fin de la funcion
 
@@ -32,7 +34,7 @@ GOTO:EOF
 	ECHO * Instrucciones *
 	ECHO *****************
 	ECHO.
-	ECHO 1. Cuando se abra el archivo de texto borra las rutas de las maquinas en las que no quieras aplicar la acción
+	ECHO 1. Cuando se abra el archivo de texto borra las rutas de las maquinas en las que no quieras aplicar la accion
 	ECHO 2. Cuando lo en el .txt solo haya la maquinas deseadas GUARDA el archivo y cierralo
 	ECHO 3. Despues solo espera
 	ECHO.
@@ -45,7 +47,7 @@ GOTO:EOF
 
 	DIR /B /S *.vbox >> routesVBox.txt
 	ECHO. >> routesVBox.txt
-	ECHO NO BORRES ESTA ULTIMA LINEA PARA UN BUEN FUNCIONAMIENTO >> routesVBox.txt
+	ECHO - NO BORRES ESTA ULTIMA LINEA PARA UN BUEN FUNCIONAMIENTO >> routesVBox.txt
 
 	START routesVBox.txt
 
@@ -84,9 +86,13 @@ GOTO:EOF
 :exportOvaVM
 	CALL:instructions
 	:: Muestra las instrucciones
-
-	CALL:vmSearcher
-	:: Llama al buscador de maquinas para abrir el txt
+	SET fecha=%date%
+	START /B /WAIT VBoxManage list vms >> listVM.txt
+	START listVM.txt
+	ECHO. >> listVM.txt
+	ECHO - NO BORRES ESTA ULTIMA LINEA PARA UN BUEN FUNCIONAMIENTO >> listVM.txt
+	PAUSE
+	
 	CLS
 	ECHO.
 	ECHO ***************************
@@ -95,21 +101,26 @@ GOTO:EOF
 	ECHO.
 	
 	IF NOT EXIST ovasDeMaquinas_%date:/=_% MKDIR ovasDeMaquinas_%date:/=_%
-	FOR /F %%i IN (routesVBox.txt) DO (
-		START /B /WAIT vboxmanage export %%i --output %%i.ova && ECHO Maquina %%i exportada
+	FOR /F "tokens=1,2" %%i IN (listVM.txt) DO (
+		IF "%%i" == "-" GOTO moverOvas
+		START /B /WAIT vboxmanage export %%j --output %%i_%fecha:/=_%.ova && ECHO Maquina %%i exportada
+		ECHO.
 	)
+	:moverOvas
 	:: Exporta las VM una por una en ovas independientes
-
-
-	DIR /B /S *.vbox.ova >> routesOva.txt
+	ECHO.
+	ECHO MAQUINAS EXPORTADAS, A CONTINUACION SE MOVERAN A UNA CARPETA
+	ECHO.
+	DIR /B /S *_%fecha:/=_%.ova >> routesOva.txt
 
 	FOR /F %%i IN (routesOva.txt) DO (
 		MOVE /Y %%i ovasDeMaquinas_%date:/=_% && ECHO Maquina %%i movida
+		ECHO.
 	)
 	:: Mueve todas las ova a una carpeta
 
 	DEL routesOva.txt
-	DEL routesVBox.txt
+	DEL listVM.txt
 GOTO:EOF
 
 :registerVM
@@ -124,11 +135,12 @@ GOTO:EOF
 	ECHO.
 
 	FOR /F %%i IN (routesVBox.txt) DO (
+		IF "%%i" == "-" GOTO finRegistro
 		START /B vboxmanage registervm %%i
 		IF %ERRORLEVEL% == 0 ECHO Maquina %%i anhadida
 	)
 	:: Registra las maquinas que el buscador encontro
-
+	:finRegistro
 	DEL routesVBox.txt
 GOTO:EOF
 
@@ -143,7 +155,7 @@ GOTO:EOF
 	ECHO ***********************************
 	ECHO.
 
-	SETLOCAL enableextensions enabledelayedexpansion
+	SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
 	:: Permite la reasignacion de variables
 	
 	SET fecha = date /T
@@ -170,35 +182,31 @@ GOTO:EOF
 	ECHO * Desregistrar VM en estado inaccesible *
 	ECHO *****************************************
 	ECHO.
+	
 	CHOICE /M "Estas seguro que quieres desregistrar las VM inaccesibles?"
-	:: Da la opcion a escoger si realmente quieres desregistrarlas o no
+	:: La opcion de si se quieren desregistrar o no
 
 	IF ERRORLEVEL 2 GOTO fin
 
 	IF ERRORLEVEL 1 (
 
-		START /B /WAIT VBoxManage list vms >> listVM.txt
-		:: Hace la lista de maquinas registradas y la guarda en un txt
+	START /B /WAIT VBoxManage list vms >> listVM.txt
 
-		FINDSTR "\<\<.*\>\>" listVM.txt >> onlyVMUnregister.txt
-		:: Busca las lineas que contengan un string que inicie con "<" y finalice con ">", 
-		:: esas lineas las guarda en otro txt de solo maquinas inaccesibles 
-		:: Ej lista: "<inaccesible>" {000-000000-0000000-0000000-00000-000}
-
-		FOR /F "tokens=1,2" %%i IN (onlyVMUnregister.txt) DO (
-			START /B VBoxManage unregistervm %%j
-		)
-		:: Desregistra las VM del archivo usando su identificador, el numero de las llaves
-		
-		ECHO.
-		ECHO ***************************************************
-		ECHO * Maquinas virtuales inaccesibles desregistradas. *
-		ECHO ***************************************************
-		
-		DEL listVM.txt
-		DEL onlyVMUnregister.txt
+	FINDSTR "\<\<.*\>\>" listVM.txt >> onlyVMUnregister.txt
+	:: En el archivo que se crea busca todas aquellas maquinas que empiezan por < y terminan por >
+	:: esto ya que las maquinas en estado inaccesible tienen estos caracteres
+	FOR /F "tokens=1,2" %%i IN (onlyVMUnregister.txt) DO (
+		START /B VBoxManage unregistervm %%j
 	)
-	:fin
+	ECHO.
+	ECHO ***************************************************
+	ECHO * Maquinas virtuales inaccesibles desregistradas. *
+	ECHO ***************************************************
+
+	DEL listVM.txt
+	DEL onlyVMUnregister.txt
+)
+:fin
 GOTO:EOF
 
 :unregisterVM
