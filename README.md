@@ -35,16 +35,46 @@ Esta funcionalidad, permite la captura de instantáneas o snapshots a las VM que
 
 -----
 
-
+### Modificación de configuración
+Tienen cada una su configuración, pero por diversos motivos debemos 
+modificar las características de cada máquina, para que vaya más 
+rápido o nuestro ordenador no se ahogue si pusimos demasiados recursos a 
+disposición de las VM. Por este motivo, esta característica del CAAVB 
+permite modificar la RAM, el número de núcleos virtuales, cambiar la 
+memoria gráfica por encima de lo permitido, y aumentar la capacidad de 
+los discos virtuales para que no nos quedemos sin capacidad.  
 
 [Vídeo de modificación de la configuración de VM](https://www.youtube.com/watch?v=F-uV9ZoRekg&list=PLiBaBAbzo-JFW_wGCsT9UPUl9I9ZMFgju&index=6)  
 
-[Vídeo de creación de máquinas con instalación desatendida ](https://www.youtube.com/watch?v=FWbabs2YDjQ&list=PLiBaBAbzo-JFW_wGCsT9UPUl9I9ZMFgju&index=8) 
+-----
+### Instalación desatendida
+Con esta funcionalidad podremos instalar de forma desatendida el SO de 
+una máquina que aun no se inicio, útil para ahorra tiempo. Esto generará 
+un archivo con el nombre de unnatended.xml con toda la configuración que 
+le asignemos.  
+[Vídeo de creación de máquinas con instalación desatendida](https://www.youtube.com/watch?v=FWbabs2YDjQ&list=PLiBaBAbzo-JFW_wGCsT9UPUl9I9ZMFgju&index=8) 
 
+-----
+### Registrado de máquinas
+Si llevamos máquinas virtuales en un disco externo es muy probable que 
+en el equipo haya que registrarlas en VirtualBox para poder usarlas. 
+Para esta tarea, el programa busca las máquinas .vbox que hay a partir 
+del mismo y agrega las que seleccionemos, respetando los grupos y las 
+configuraciones de cada máquina.  
 [Vídeo del registrado de VM](https://www.youtube.com/watch?v=UFgeti-_gP4&list=PLiBaBAbzo-JFW_wGCsT9UPUl9I9ZMFgju&index=3)  
 
-[Vídeo del desregistrado de máquinas virtuales ](https://www.youtube.com/watch?v=b0B9TUtgIDw&list=PLiBaBAbzo-JFW_wGCsT9UPUl9I9ZMFgju&index=4)  
+-----
+### Desregistrado de VM
+Como funcionalidad a mayores y para facilitar su uso junto a otras 
+características, decidí añadir la de desregistrar de VirtualBox las 
+máquinas que se seleccionen.  
+[Vídeo del desregistrado de máquinas virtuales](https://www.youtube.com/watch?v=b0B9TUtgIDw&list=PLiBaBAbzo-JFW_wGCsT9UPUl9I9ZMFgju&index=4)  
 
+-----
+### Desregistrado de máquinas en estado inaccesible
+Esta funcionalidad, permite desregistrar la máquinas cuando el programa 
+no las detecta. Esto pasa cuando abrimos VirtualBox, y no se detectan 
+las máquinas de un disco externo.  
 [Vídeo del desregistrado de máquinas en estado inaccesible](https://www.youtube.com/watch?v=Pp2zRKARiLs&list=PLiBaBAbzo-JFW_wGCsT9UPUl9I9ZMFgju&index=10)  
 
 
