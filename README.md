@@ -1,17 +1,34 @@
 # Proyecto de fin de curso de ASIR
 
+## Índice
+
+1. [Resumen del proyecto](#Resumen-del-proyecto).
+2. [Recomendaciones de uso.](#Recomendaciones-de-uso)
+3. [Estructura.](#Estructura)
+
+-----
+
+## Resumen del proyecto
+
 El proyecto será un "Centro de administración avanzada de Virtual Box", todo hecho con archivos .bat donde se pondrán crear y gestionar máquinas virtuales para realizar operaciones de forma masiva o que solo se puedan hacer por comandos.  
 
 En este Centro de administración de avanzada se podrá:  
-1. Crear ovas independientes de varias máquinas.
-2. Crear instantáneas de varias máquinas.
-3. Modificar de la configuración de una o varias máquinas de forma masiva.
-4. Crear de máquinas con instalación desatendida.
-5. Registrar VM en caso de llevarlas en un disco externo.
-6. Desregistrar las máquinas que se deseen.
-7. Desregistrar máquinas en estado inaccesible.
+1. [Crear ovas independientes de varias máquinas.](#Exportar-a-OVA)
+2. [Crear instantáneas de varias máquinas.](#Creación-de-instantánea-o-snapshots)
+3. [Modificar de la configuración de una  o varias máquinas de forma masiva.](#Modificación-de-configuración)
+4. [Crear de máquinas con instalación desatendida.](#Instalación-desatendida)
+5. [Registrar VM en caso de llevarlas en un disco externo.](#Registrado-de-máquinas)
+6. [Desregistrar las máquinas que se deseen.](#Desregistrado-de-VM)
+7. [Desregistrar máquinas en estado inaccesible.](#Desregistrado-de-máquinas-en-estado-inaccesible)
 
 -----
+
+## Recomendaciones de uso
+
+Para usar el el CAAVB hay que cumplir una serie de requisitos:
+
+- Situar el archivo del programa en la ruta de las carpetas de las máquinas virtuales.
+- En toda la ruta de las VM **NO** puede haber ni espacios ni caracteres extraños.
 
 ## Estructura
 
